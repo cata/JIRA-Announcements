@@ -1,0 +1,14 @@
+{
+  "presets": ["@babel/preset-env","@babel/preset-react"],
+  "plugins": [
+    // alphabetical order please! git-merge and your colleagues will thank you.
+    "check-es2015-constants",
+    "transform-es2015-arrow-functions",
+    "transform-es2015-block-scoped-functions",
+	"@babel/plugin-proposal-class-properties"
+  ],
+  // Avoid compiling our vendor libraries, since they're assumed to be production-ready as-is.
+  "ignore": [
+    "**/vendor/**/*.js"
+  ]
+}

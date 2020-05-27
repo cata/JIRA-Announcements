@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2"> 
+  <plugin-info> 
+    <description>${project.description}</description>  
+    <version>${project.version}</version>  
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>  
+    <param name="plugin-icon">images/pluginIcon.png</param>  
+    <param name="plugin-logo">images/pluginLogo.png</param> 
+  </plugin-info>  
+  <!-- add our i18n resource -->  
+  <resource type="i18n" name="i18n" location="JIRAANNOUNCEMENTS"/>  
+  <!-- add our web resources -->  
+  <web-resource key="JIRAANNOUNCEMENTS-resources" name="JIRAANNOUNCEMENTS Web Resources"> 
+    <dependency>com.atlassian.auiplugin:ajs</dependency>  
+    <resource type="download" name="index.js" location="/js/index.js"/>  
+    <resource type="download" name="images/" location="/images"/>  
+    <context>JIRAANNOUNCEMENTS</context> 
+  </web-resource>  
+  <web-section name="JIRA Announcements" i18n-name-key="jira-announcements.name" key="jira-announcements" location="admin_plugins_menu" weight="1000"> 
+    <description key="jira-announcements.description">The JIRA Announcements Plugin</description>  
+    <label key="jira-announcements.label"/> 
+  </web-section>  
+  <web-item name="Announcements" i18n-name-key="announcements.name" key="announcements" section="admin_plugins_menu/jira-announcements" weight="1000"> 
+    <description key="announcements.description">The Announcements Plugin</description>  
+    <label key="announcements.label"/>  
+    <link linkId="announcements-link">/secure/JIRAAnnouncementsConfigurationPageAction!default.jspa</link> 
+  </web-item>  
+  <webwork1 key="jira-announcements-configuration-page" name="JIRA Announcements Configuration Page" i18n-name-key="jira-announcements-configuration-page.name"> 
+    <description key="jira-announcements-configuration-page.description">The JIRA Announcements Configuration Page Plugin</description>  
+    <actions> 
+      <action name="com.erika.jira.webwork.JIRAAnnouncementsConfigurationPageAction" alias="JIRAAnnouncementsConfigurationPageAction"> 
+        <view name="success">/templates/Configuration-Page/success.vm</view>  
+        <view name="input">/templates/Configuration-Page/input.vm</view>  
+        <view name="error">/templates/Configuration-Page/error.vm</view> 
+      </action> 
+    </actions> 
+  </webwork1>  
+  <ao key="ao-module"> 
+    <description>The module configuring the Active Objects service used by this plugin</description>  
+    <entity>com.erika.jira.entity.Announcement</entity>  
+    <entity>com.erika.jira.entity.UserPref</entity> 
+  </ao>  
+  <rest name="Jira Announcement" i18n-name-key="jira-announcement.name" key="jira-announcement" path="/jiraannouncement" version="1.0"> 
+    <description key="jira-announcement.description">REST End Points for Jira Announcement Plugin</description> 
+  </rest>  
+  <rest name="Jira User Pref" i18n-name-key="jira-user-pref.name" key="jira-user-pref" path="/jirauserpref" version="1.0"> 
+    <description key="jira-user-pref.description">The Jira User Pref Plugin</description> 
+  </rest>
+</atlassian-plugin>
