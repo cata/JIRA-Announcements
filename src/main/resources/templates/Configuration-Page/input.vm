@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Smart JIRA Banner</title>
+  <title>JIRA ANNOUNCEMENTS</title>
   <meta name="decorator" content="atl.admin" />
   $webResourceManager.requireResourcesForContext("com.erika.jira.JIRAANNOUNCEMENTS.admin-config-context")
 </head>

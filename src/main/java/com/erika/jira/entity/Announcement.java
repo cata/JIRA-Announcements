@@ -1,25 +1,17 @@
 package com.erika.jira.entity;
 
-import java.util.Date;
 import net.java.ao.Entity;
+
+import java.util.Date;
+
 import net.java.ao.Accessor;
-import net.java.ao.schema.AutoIncrement;
 import net.java.ao.schema.Default;
-import net.java.ao.schema.PrimaryKey;
 import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 import net.java.ao.schema.NotNull;
 
 @Table("Announcement")
 public interface Announcement extends Entity {
-
-    @Accessor("ID")
-    @NotNull
-    @PrimaryKey
-    @AutoIncrement
-    public String getId();
-
-    public void setId(int id);
 
     @Accessor("TITLE")
     @NotNull
@@ -46,6 +38,13 @@ public interface Announcement extends Entity {
 
     public void setAnnouncement(String announcement);
 
+    @Accessor("USERREPLY")
+    @NotNull
+    @Default("false")
+    public Boolean getUserreply();
+
+    public void setUserreply(Boolean userreply);
+
     @Accessor("CONTACT")
     @Default("None")
     public String getContact();
@@ -57,6 +56,12 @@ public interface Announcement extends Entity {
     public String getFrequency();
 
     public void setFrequency(String frequency);
+
+    @Accessor("FREQUENCYCOUNT")
+    @NotNull
+    public int getFrequencycount();
+
+    public void setFrequencycount(int frequencycount);
 
     @Accessor("ENABLED")
     @NotNull

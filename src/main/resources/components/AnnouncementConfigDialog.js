@@ -1,20 +1,15 @@
 import React from "react";
 import Modal, { ModalTransition } from "@atlaskit/modal-dialog";
+import { ErrorMessage } from "@atlaskit/form";
 import Textfield from "@atlaskit/textfield";
 import Select from "@atlaskit/select";
 import TextArea from "@atlaskit/textarea";
 import Range from "@atlaskit/range";
-import { DatePicker, TimePicker } from "@atlaskit/datetime-picker";
+import { DateTimePicker } from "@atlaskit/datetime-picker";
+import { gridSize } from "@atlaskit/theme";
 import Toggle from "@atlaskit/toggle";
 import ReactQuill from "react-quill"; // ES6
 import "react-quill/dist/quill.snow.css";
-import {
-  Editor,
-  WithEditorActions,
-  EditorContext,
-  CollapsedEditor,
-} from "@atlaskit/editor-core";
-import { JIRATransformer } from "@atlaskit/editor-jira-transformer";
 import { Checkbox } from "@atlaskit/checkbox";
 
 class AnnouncementConfigDialog extends React.Component {
@@ -22,26 +17,29 @@ class AnnouncementConfigDialog extends React.Component {
     super(props);
     this.state = {
       announcementTitle: "",
-      type: false,
-      messageType: false,
+      type: "Info",
+      messageType: "Rich Text Editor",
       announcementMessage: "",
       announcementContact: "",
-      frequency: false,
+      frequency: "Run per session",
       count: 1,
       startDate: "",
       endDate: "",
+      dateErrorMsg: "",
       status: true,
       checkValildity: false,
-      rtfValid: false,
       allowUserToReply: false,
     };
 
-    var realSchema = false;
     this.handleCloseModal = this.handleCloseModal.bind(this);
     this.saveData = this.saveData.bind(this);
     this.handleDataChange = this.handleDataChange.bind(this);
     this.handleRichText = this.handleRichText.bind(this);
+    //REMOVE:
     this.timeChangeHandler = this.timeChangeHandler.bind(this);
+    this.handleStartDate = this.handleStartDate.bind(this);
+    this.handleEndDate = this.handleEndDate.bind(this);
+    //REMOVE:
     this.oneDayGapBetweenDates = this.oneDayGapBetweenDates.bind(this);
   }
 
@@ -49,11 +47,49 @@ class AnnouncementConfigDialog extends React.Component {
     this.props.closeModal();
   }
 
+  //REMOVE:
   timeChangeHandler(time, type) {
     var thisTypeDate = this.state[type].split("T")[0];
     this.setState({
       [type]: thisTypeDate + "T" + time,
     });
+  }
+
+  handleStartDate(time) {
+    this.setState({
+      startDate: time,
+    });
+  }
+
+  handleEndDate(time) {
+    this.setState({
+      endDate: time,
+    });
+  }
+
+  validateDate() {
+    var startDate = String(this.state.startDate);
+    var endDate = String(this.state.endDate);
+    var difference = new Date(endDate) - new Date(startDate);
+    var oneDayDifference = difference > 0 ? true : false;
+    var endDateAndTodayDifference =
+      new Date(endDate) - new Date() > 0 ? true : false;
+    if (!oneDayDifference) {
+      this.setState({
+        dateErrorMsg: "End Date Time should be greater than Start Date Time",
+      });
+    }
+    if (!endDateAndTodayDifference) {
+      this.setState({
+        dateErrorMsg: "End Date Time should be greater than Current Date Time",
+      });
+    }
+    if (oneDayDifference && endDateAndTodayDifference) {
+      this.setState({
+        dateErrorMsg: "",
+      });
+    }
+    return oneDayDifference;
   }
 
   componentDidMount() {
@@ -67,8 +103,8 @@ class AnnouncementConfigDialog extends React.Component {
         announcementContact: this.props.editInformations.announcementContact,
         frequency: this.props.editInformations.frequency,
         count: this.props.editInformations.count,
-        startDate: this.props.editInformations.startDate.props.date,
-        endDate: this.props.editInformations.endDate.props.date,
+        startDate: new Date(this.props.editInformations.startDate.props.date),
+        endDate: new Date(this.props.editInformations.endDate.props.date),
         status: this.props.editInformations.status === "Enabled" ? true : false,
         editKey: this.props.editInformations.editKey,
         allowUserToReply:
@@ -76,38 +112,7 @@ class AnnouncementConfigDialog extends React.Component {
       });
   }
 
-  // handleRichText = actions => editorView => {
-  //     // FOR JIRA
-
-  // To encode editor content as markdown
-  // serializer.encode(editorContent);
-  // To convert HTML to editor content
-  // serializer.parse(editorContent);
-
-  //     var rtfValid = true;
-  //     actions.getValue().then(value => {
-  //         const serializer = new JIRATransformer(this.realSchema);
-  //         if(value === null || !value.content || value.content.length === 0)
-  //             rtfValid = false;
-
-  //         if (value !== null) {
-  //             debugger;
-  //             this.setState({
-  //                 announcementMessage: value,
-  //                 rtfValid: rtfValid
-  //             })
-  //         }
-  //     })
-  // }
-
   handleRichText(value) {
-    // var editorContent = event.dom.innerHTML;
-    // var rtfValid = true;
-    // if (event.dom.textContent == "") rtfValid = false;
-    // this.setState({
-    //   announcementMessage: editorContent, // To convert HTML to editor content
-    //   rtfValid: rtfValid,
-    // });
     this.setState({ announcementMessage: value });
   }
 
@@ -133,24 +138,20 @@ class AnnouncementConfigDialog extends React.Component {
       this.state.type &&
       this.state.messageType &&
       this.state.frequency &&
-      this.state.startDate &&
-      this.state.startDate.split("T")[1] !== undefined &&
-      this.state.endDate &&
-      this.state.endDate.split("T")[1] !== undefined &&
-      this.oneDayGapBetweenDates()
+      this.state.startDate !== "" &&
+      this.state.endDate !== "" &&
+      this.validateDate()
     );
   }
 
-  schemaFunction(schema) {
-    this.realSchema = schema;
-  }
-
+  //REMOVE:
   oneDayGapBetweenDates() {
     return (
       new Date(this.state.endDate) - new Date(this.state.startDate) > 86400000
     ); //true if more than 24hrs
   }
 
+  //REMOVE:
   disabledDay(type) {
     if (this.state.startDate && this.state.endDate) {
       if (new Date(this.state.startDate) > new Date(this.state.endDate)) {
@@ -178,6 +179,7 @@ class AnnouncementConfigDialog extends React.Component {
     }
   }
 
+  //REMOVE:
   getISODate(date) {
     if (date instanceof Date && !isNaN(date))
       return date.toISOString().split("T")[0];
@@ -210,13 +212,37 @@ class AnnouncementConfigDialog extends React.Component {
       { text: "Close", onClick: this.handleCloseModal },
     ];
 
+    const times = [
+      "00:00",
+      "1:00",
+      "2:00",
+      "3:00",
+      "4:00",
+      "5:00",
+      "6:00",
+      "7:00",
+      "8:00",
+      "9:00",
+      "10:00",
+      "11:00",
+      "12:00",
+      "13:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00",
+      "20:00",
+      "21:00",
+      "22:00",
+      "23:00",
+    ];
+
     const formElementStyle = {
       marginBottom: "15px",
     };
 
-    const rtfValidation = {
-      color: "red",
-    };
     const emailValidationExperssion = /(?!.*\.{2})^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([\t]*\r\n)?[\t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([\t]*\r\n)?[\t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
 
     return (
@@ -235,19 +261,17 @@ class AnnouncementConfigDialog extends React.Component {
               }
               onChange={this.handleDataChange}
             />
+            {this.state.checkValildity &&
+              this.state.announcementTitle === "" && (
+                <ErrorMessage>This field is required.</ErrorMessage>
+              )}
           </div>
-
           <div style={formElementStyle}>
             <label htmlFor="type" style={{ marginBottom: `10px` }}>
               Type
             </label>
             <Select
               className="single-select"
-              validationState={
-                this.state.checkValildity && !this.state.type
-                  ? "error"
-                  : "default"
-              }
               classNamePrefix="react-select"
               onChange={this.handleDataChange}
               isSearchable={false}
@@ -269,20 +293,14 @@ class AnnouncementConfigDialog extends React.Component {
               placeholder="Type"
             />
           </div>
-
           <div style={formElementStyle}>
             <label htmlFor="messageType" style={{ marginBottom: `10px` }}>
-              Announcement Type
+              Announcement Message Type
             </label>
             <Select
               className="single-select"
               name="messageType"
               isSearchable={false}
-              validationState={
-                this.state.checkValildity && !this.state.messageType
-                  ? "error"
-                  : "default"
-              }
               classNamePrefix="react-select"
               onChange={(event) => {
                 this.handleDataChange(event);
@@ -308,50 +326,28 @@ class AnnouncementConfigDialog extends React.Component {
               placeholder="Announcement Type"
             />
           </div>
-
           {(this.state.messageType === "Rich Text Editor" ||
             !this.state.messageType) && (
-            <div
-              style={formElementStyle}
-              style={
-                this.state.checkValildity && !this.state.rtfValid
-                  ? rtfValidation
-                  : {}
-              }
-            >
+            <div style={formElementStyle}>
               <label
                 htmlFor="announcementMessage"
                 style={{ marginBottom: `10px` }}
               >
                 Announcement Message
               </label>
-              {/* <EditorContext>
-                <WithEditorActions
-                  render={(actions) => (
-                    <Editor
-                      name="announcementMessage"
-                      appearance="comment"
-                      defaultValue={"<div>Hello</div>"}
-                      onEditorReady={(event) => {
-                        if (this.state.announcementMessage) {
-                          event.editorView.dom.innerHTML = this.state.announcementMessage;
-                        }
-                      }}
-                      contentTransformerProvider={(schema) =>
-                        this.schemaFunction(schema)
-                      }
-                      onChange={this.handleRichText}
-                    />
-                  )}
+              <div>
+                <ReactQuill
+                  value={this.state.announcementMessage}
+                  onChange={this.handleRichText}
                 />
-              </EditorContext> */}
-              <ReactQuill
-                value={this.state.announcementMessage}
-                onChange={this.handleRichText}
-              />
+                {this.state.checkValildity &&
+                  this.state.announcementMessage === "" &&
+                  this.state.messageType === "Rich Text Editor" && (
+                    <ErrorMessage>This field is required.</ErrorMessage>
+                  )}
+              </div>
             </div>
           )}
-
           {this.state.messageType === "HTML" && (
             <div style={formElementStyle}>
               <label
@@ -377,9 +373,13 @@ class AnnouncementConfigDialog extends React.Component {
                     : ""
                 }
               />
+              {this.state.checkValildity &&
+                this.state.announcementMessage === "" &&
+                this.state.messageType === "HTML" && (
+                  <ErrorMessage>This field is required.</ErrorMessage>
+                )}
             </div>
           )}
-
           <div style={formElementStyle}>
             <Checkbox
               value="Allow user to reply?"
@@ -389,26 +389,31 @@ class AnnouncementConfigDialog extends React.Component {
               name="allowUserToReply"
             />
           </div>
-
-          <div style={formElementStyle}>
-            <label htmlFor="announcementContact">Announcement Contact</label>
-            <Textfield
-              name="announcementContact"
-              value={this.state.announcementContact}
-              placeholder="Announcement POC"
-              type="Email"
-              autoComplete="off"
-              isInvalid={
-                this.state.checkValildity &&
+          {this.state.allowUserToReply && (
+            <div style={formElementStyle}>
+              <label htmlFor="announcementContact">Announcement Contact</label>
+              <Textfield
+                name="announcementContact"
+                value={this.state.announcementContact}
+                placeholder="Announcement POC"
+                type="Email"
+                autoComplete="off"
+                isInvalid={
+                  this.state.checkValildity &&
+                  this.state.allowUserToReply &&
+                  !emailValidationExperssion.test(
+                    this.state.announcementContact.toLowerCase()
+                  )
+                }
+                onChange={this.handleDataChange}
+              />
+              {this.state.checkValildity &&
                 this.state.allowUserToReply &&
                 !emailValidationExperssion.test(
                   this.state.announcementContact.toLowerCase()
-                )
-              }
-              onChange={this.handleDataChange}
-            />
-          </div>
-
+                ) && <ErrorMessage>This field is required.</ErrorMessage>}
+            </div>
+          )}
           <div style={formElementStyle}>
             <label htmlFor="frequency" style={{ marginBottom: `10px` }}>
               Frequency
@@ -416,11 +421,6 @@ class AnnouncementConfigDialog extends React.Component {
             <Select
               className="single-select"
               name="frequency"
-              validationState={
-                this.state.checkValildity && !this.state.frequency
-                  ? "error"
-                  : "default"
-              }
               isSearchable={false}
               classNamePrefix="react-select"
               onChange={this.handleDataChange}
@@ -435,8 +435,8 @@ class AnnouncementConfigDialog extends React.Component {
               }
               options={[
                 {
-                  label: "Run for ‘N’ number of times",
-                  value: "Run for ‘N’ number of times",
+                  label: "Run for 'N' number of times",
+                  value: "Run for 'N' number of times",
                   name: "frequency",
                 },
                 {
@@ -449,8 +449,7 @@ class AnnouncementConfigDialog extends React.Component {
               placeholder="Announcement Type"
             />
           </div>
-
-          {this.state.frequency === "Run for ‘N’ number of times" && (
+          {this.state.frequency === "Run for 'N' number of times" && (
             <div style={formElementStyle}>
               <label htmlFor="count">Range</label>
               <Range
@@ -465,7 +464,9 @@ class AnnouncementConfigDialog extends React.Component {
             </div>
           )}
 
-          <div style={formElementStyle}>
+          {
+            //REMOVE:
+            /* <div style={formElementStyle}>
             <label htmlFor="startDate">Start Date</label>
             <DatePicker
               name="startDate"
@@ -493,9 +494,9 @@ class AnnouncementConfigDialog extends React.Component {
                 selectProps={{ classNamePrefix: "timepicker-select" }}
               />
             )}
-          </div>
-
-          <div style={formElementStyle}>
+          </div> */
+          }
+          {/* <div style={formElementStyle}>
             <label htmlFor="endDate">End Date</label>
             <DatePicker
               name="endDate"
@@ -523,10 +524,47 @@ class AnnouncementConfigDialog extends React.Component {
                 selectProps={{ classNamePrefix: "timepicker-select" }}
               />
             )}
-          </div>
-
+          </div> */}
           <div style={formElementStyle}>
-            <label htmlFor="status">Do not remimd me</label>
+            <label htmlFor="startDate">Start Date</label>
+            <DateTimePicker
+              name="startDateTime"
+              times={times}
+              onChange={(value) => this.handleStartDate(value)}
+              placeholder="Pick Date and Time"
+              defaultValue={this.state.startDate}
+              innerProps={{ style: { width: gridSize() * 40 } }}
+            />
+            {this.state.checkValildity &&
+              (this.state.startDate === undefined ||
+                this.state.startDate === "") && (
+                <ErrorMessage>This field is required.</ErrorMessage>
+              )}
+          </div>
+          <div style={formElementStyle}>
+            <label htmlFor="endDate">End Date</label>
+            <DateTimePicker
+              name="endDateTime"
+              times={times}
+              onChange={(value) => this.handleEndDate(value)}
+              placeholder="Pick Date and Time"
+              defaultValue={this.state.endDate}
+              innerProps={{ style: { width: gridSize() * 40 } }}
+            />
+            {this.state.checkValildity &&
+              (this.state.endDate === undefined || this.state.endDate === "") &&
+              this.state.dateErrorMsg === "" && (
+                <ErrorMessage>This field is required.</ErrorMessage>
+              )}
+            {this.state.checkValildity &&
+              this.state.endDate != undefined &&
+              this.state.endDate != "" &&
+              this.state.dateErrorMsg != "" && (
+                <ErrorMessage>{this.state.dateErrorMsg}</ErrorMessage>
+              )}
+          </div>
+          <div style={formElementStyle}>
+            <label htmlFor="status">Enabled</label>
             <Toggle
               name="status"
               isDefaultChecked={this.state.status}

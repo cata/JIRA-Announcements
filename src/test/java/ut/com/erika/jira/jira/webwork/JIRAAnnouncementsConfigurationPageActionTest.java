@@ -3,9 +3,7 @@ package ut.com.erika.jira.jira.webwork;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import com.erika.jira.webwork.JIRAAnnouncementsConfigurationPageAction;
 
-import static org.mockito.Mockito.*;
 
 /**
  * @since 3.5
